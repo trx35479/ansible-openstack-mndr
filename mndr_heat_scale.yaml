@@ -1,0 +1,393 @@
+heat_template_version: 2016-10-14 
+ 
+description: >
+  Heat template for the Mndr application on OpenStack cloud. The template will autoscale Mndr application VMs, 
+  spin-up the F5 Diameter loadbalancer, create a VM for seagull or test harness, VM for TDSI and CDB. Template
+  also will expose the API for the manual scaling in and out of Mndr application.
+
+# parameters to be used, much like variables
+parameters:
+  f5_image:
+    type: string
+    label: Image options for F5 VM
+    description: Image options for VMs in stack
+    default: f5_image
+    constraints:
+      - allowed_values:
+          - "ubuntu-xenial"
+          - "f5_image"
+  seagull_image:
+    type: string
+    label: Image options for Seagull VM
+    description: Image options for VMs in stack
+    default: seagull_image
+    constraints:
+      - allowed_values:
+          - "ubuntu-xenial"
+          - "seagull_image"
+  tdsi_image:
+    type: string
+    label: Image options for TDSI VM
+    description: Image options for VMs in stack
+    default: tdsi_image
+    constraints:
+      - allowed_values:
+          - "ubuntu-xenial"
+          - "tdsi_image"
+  cdb_image:
+    type: string
+    label: Image options for CDB VM
+    description: Image options for VMs in stack
+    default: cdb_image
+    constraints:
+      - allowed_values:
+          - "ubuntu-xenial"
+          - "cdb_image"
+  mndr_image:
+    type: string
+    label: Image options for MNDR VM
+    description: Image options for VMs in stack
+    default: mndr_image
+    constraints:
+      - allowed_values:
+          - "ubuntu-xenial"
+          - "mndr_image"
+  f5_flavor:
+    type: string
+    label: Flavor options for F5 VM
+    description: Flavor options for F5 VM
+    constraints:
+      - allowed_values:
+          - "m1.nano"
+          - "m1.small"
+          - "m1.medium"
+          - "m1.large"
+  seagull_flavor:
+    type: string
+    label: Flavor options for Seagull VM
+    description: Flavor options for Seagull VM
+    constraints:
+      - allowed_values:
+          - "m1.nano"
+          - "m1.small"
+          - "m1.medium"
+          - "m1.large"
+  tdsi_flavor:
+    type: string
+    label: Flavor options for TDSI VM
+    description: Flavor options for TDSI VM
+    constraints:
+      - allowed_values:
+          - "m1.nano"
+          - "m1.small"
+          - "m1.medium"
+          - "m1.large"
+  cdb_flavor:
+    type: string
+    label: Flavor options for CDB VM
+    description: Flavor options for CDB VM
+    constraints:
+      - allowed_values:
+          - "m1.nano"
+          - "m1.small"
+          - "m1.medium"
+          - "m1.large"
+  mndr_flavor:
+    type: string
+    label: Flavor options for MNDR VM
+    description: Flavor options for MNDR VM
+    constraints:
+      - allowed_values:
+          - "m1.nano"
+          - "m1.small"
+          - "m1.medium"
+          - "m1.large"
+  prefix:
+    type: string
+    label: Generic Prefix for Naming
+    description: The prefix to be used on naming keypair
+
+  public_net_id:
+    type: string
+    label: The public network that connects to internet
+
+# Network resources including the networks, subnets, interfaces to router and gateway to the public network
+# We will create two networks, 1 for MNDR and 1 for the rest of the instances, both has an interface to 
+# router for them to connect each other
+resources:
+  mndr_network:
+    type: OS::Neutron::Net
+    properties:
+      name:
+        str_replace:
+          template: $prefix-net
+          params: 
+            $prefix: {get_param: prefix}
+      admin_state_up: true
+  test_nework:
+    type: OS::Neutron::Net
+    properties:
+      name:
+        str_replace:
+          template: $prefix-test-net
+          params:
+            $prefix: {get_param: prefix}
+      admin_state_up: true
+  mndr_subnet:
+    type: OS::Neutron::Subnet
+    depends_on: mndr_network
+    properties:
+      name:
+        str_replace:
+          template: $prefix-subnet
+          params:
+            $prefix: {get_param: prefix}
+      cidr: 10.120.0.0/24
+      dns_nameservers: [192.169.11.38, 192.168.11.2]
+      enable_dhcp: true
+      network_id: {get_resource: mndr_network}
+  test_subnet:
+    type: OS::Neutron::Subnet
+    depends_on: test_nework
+    properties:
+      name:
+        str_replace:
+          template: $prefix-test-subnet
+          params:
+            $prefix: {get_param: prefix}
+      cidr: 10.110.0.0/24
+      dns_nameservers: [192.169.11.38, 192.168.11.2]
+      network_id: {get_resource: test_nework}
+  mndr_router:
+    type: OS::Neutron::Router
+    properties:
+      name:
+        str_replace:
+          template: $prefix-router
+          params:
+            $prefix: {get_param: prefix}
+      admin_state_up: true
+  mndr_router_gw:
+    type: OS::Neutron::RouterGateway
+    properties:
+      router_id: {get_resource: mndr_router}
+      network_id: {get_param: public_net_id}
+  mndr_router_int:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: {get_resource: mndr_router}
+      subnet_id: {get_resource: mndr_subnet}
+  mndr_router_test_int:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: {get_resource: mndr_router}
+      subnet_id: {get_resource: test_subnet}
+# Create a floating IP and attached to 1 of the VM - this is to remotely connect to the stacks
+# and will acts as jump server to other VMs. FloatingIP will be attached to F5 VM
+  f5_port:
+    type: OS::Neutron::Port
+    depends_on: test_nework
+    properties:
+      network: {get_resource: test_nework}
+      admin_state_up: true
+  floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: {get_param: public_net_id}
+  floating_ip_assoc:
+    type: OS::Neutron::FloatingIPAssociation
+    depends_on: f5_port
+    properties:
+      floatingip_id: {get_resource: floating_ip}
+      port_id: {get_resource: f5_port}
+
+# Define the keypair as a resource and print it to properties of stack
+  key_pair:
+    type: OS::Nova::KeyPair
+    properties:
+      name:
+        str_replace:
+          template: $prefix-$id
+          params:
+            $prefix: {get_param: prefix}
+            $id: {get_param: "OS::stack_name"}
+      save_private_key: true
+
+# Define the test instance that we will be spinning up by the template
+  f5_instance:
+    type: OS::Nova::Server
+    properties:
+      name: 
+        str_replace:
+          template: $prefix-f5 # need to re-visit this line, need to check the proper way to name the vm
+          params:
+            $prefix: {get_param: prefix}
+      image: {get_param: f5_image}
+      flavor: {get_param: f5_flavor}
+      networks: 
+        - port: {get_resource: f5_port}
+      key_name: {get_resource: key_pair}  
+  seagull_instance:
+    type: OS::Nova::Server
+    properties:
+      name: 
+        str_replace:
+          template: $prefix-seagull
+          params:
+            $prefix: {get_param: prefix}
+      image: {get_param: seagull_image}
+      flavor: {get_param: seagull_flavor}
+      networks:
+        - network: {get_resource: test_nework}
+      key_name: {get_resource: key_pair}
+  tdsi_instance:
+    type: OS::Nova::Server
+    properties:
+      name:
+        str_replace: 
+          template: $prefix-tdsi
+          params:
+            $prefix: {get_param: prefix}
+      image: {get_param: tdsi_image}
+      flavor: {get_param: tdsi_flavor}
+      networks:
+        - network: {get_resource: test_nework}
+      key_name: {get_resource: key_pair}
+  cdb_instance:
+    type: OS::Nova::Server
+    properties:
+      name:
+        str_replace:
+          template: $prefix-cdb
+          params:
+            $prefix: {get_param: prefix}
+      image: {get_param: cdb_image}
+      flavor: {get_param: cdb_flavor}
+      networks: 
+        - network: {get_resource: test_nework}
+      key_name: {get_resource: key_pair}
+
+# This is the auto-scaling instance only for mndr applications 
+  mndr_asg:
+    type: OS::Heat::AutoScalingGroup
+    properties:
+      min_size: 2
+      max_size: 10
+      resource:
+        type: OS::Nova::Server
+        properties:
+          key_name: {get_resource: key_pair}
+          flavor: {get_param: mndr_flavor}
+          image: {get_param: mndr_image}
+          networks:
+            - network: {get_resource: mndr_network}
+          metadata: {"metering.server_group": {get_param: "OS::stack_id"}}
+          user_data_format: RAW
+          user_data: {get_resource: cloud_config_stress}
+  scale_up_policy:
+    type: OS::Heat::ScalingPolicy
+    properties:
+      adjustment_type: change_in_capacity
+      auto_scaling_group_id: {get_resource: mndr_asg}
+      cooldown: 60
+      scaling_adjustment: 1
+  scale_down_policy:
+    type: OS::Heat::ScalingPolicy
+    properties:
+      adjustment_type: change_in_capacity
+      auto_scaling_group_id: {get_resource: mndr_asg}
+      cooldown: 60
+      scaling_adjustment: '-1'
+  cpu_alarm_high:
+    type: OS::Aodh::GnocchiAggregationByResourcesAlarm
+    properties:
+      description: Scale up if CPU > 80%
+      metric: cpu_util
+      aggregation_method: mean
+      granularity: 300
+      evaluation_periods: 1
+      threshold: 80
+      resource_type: instance
+      comparison_operator: gt
+      alarm_actions:
+        - str_replace:
+            template: trust+url
+            params:
+              url: {get_attr: [scale_up_policy, signal_url]}
+      query:
+        list_join:
+          - ''
+          - - {'=': {server_group: {get_param: "OS::stack_id"}}}
+  cpu_alarm_low:
+    type: OS::Aodh::GnocchiAggregationByResourcesAlarm
+    properties:
+      description: Scale down if CPU < 15% for 5 minutes
+      metric: cpu_util
+      aggregation_method: mean
+      granularity: 300
+      evaluation_periods: 1
+      threshold: 15
+      resource_type: instance
+      comparison_operator: lt
+      alarm_actions:
+        - str_replace:
+            template: trust+url
+            params:
+              url: {get_attr: [scale_down_policy, signal_url]}
+      query:
+        list_join:
+          - ''
+          - - {'=': {server_group: {get_param: "OS::stack_id"}}}
+
+# This block is bor testing only the scaling of mndr - can be deleted during production deployment
+  cloud_config_stress:
+    type: OS::Heat::CloudConfig
+    properties:
+      cloud_config:
+        package_update: true
+        packages:
+          - stress
+        runcmd:
+          - stress --cpu 1 --timeout 3600m
+
+# outputs some detailed information from the stacks
+outputs:
+  jump_server_ip:
+    description: Public IP that can be used as jump server
+    value: 
+      str_replace:
+        template: $vm_name $publicip
+        params:
+          $vm_name: {get_attr: [f5_instance, name]}
+          $publicip: {get_attr: [floating_ip, floating_ip_address]}
+  scale_up_url:
+    description: >
+      Webhook URL to scale up the group.
+      You can invoke the scale-up operation by doing an HTTP POST to this URL.
+    value: {get_attr: [scale_up_policy, alarm_url]}
+
+  scale_dn_url:
+    description: >
+      Webhook URL to scale down the group.
+      You can invoke the scale-down operation by doing an HTTP POST to this URL.
+    value: {get_attr: [scale_down_policy, alarm_url]}
+
+  server_list:
+    description: >
+      List of server names that are part of the group.
+    value: {get_attr: [mndr_asg, outputs_list, name]}  
+  keypair_name:
+    description: Name of the KeyPair
+    value:
+      str_replace:
+          template: $prefix-$id
+          params:
+            $prefix: {get_param: prefix}
+            $id: {get_param: "OS::stack_name"}
+  public_key:
+    description: The Public Key of the KeyPair
+    value: {get_attr: [key_pair, public_key]}
+
+  private_key:
+    description: The Private Key of the KeyPair
+    value: {get_attr: [key_pair, private_key]}

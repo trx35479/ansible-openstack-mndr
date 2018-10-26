@@ -104,8 +104,8 @@ parameters:
           - "m1.large"
   prefix:
     type: string
-    label: Generic Prefix for Naming
-    description: The prefix to be used on naming keypair
+    label: Generic prefix for naming
+    description: The prefix to be used on naming
 
   public_net_id:
     type: string

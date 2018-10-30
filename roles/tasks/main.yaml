@@ -1,0 +1,93 @@
+# Add mndr user/group
+- name: Add mndr group
+  group:
+    name: '{{ mndr_grp_usr }}'
+    gid: '{{ mndr_gid }}'
+    state: present
+- name: Create mndr user
+  user:
+    name: '{{ mndr_grp_usr }}'
+    uid: '{{ mndr_uid }}'
+    group: '{{ mndr_grp_usr }}'
+    state: present
+
+# Work on sshd config         
+- name: Modify sshd config
+  lineinfile: 
+    path: '{{ sshd_path }}' 
+    state: present 
+    regexp: '{{ item.regexp }}' 
+    line: '{{ item.line }}'
+  with_items: '{{ sshd_config }}' 
+  notify: "Restart Sshd"
+
+# Install additional package for kernel      
+- name: Install kernel-modules/upstream release
+  yum:
+    name: '{{ kernel_modules }}'
+    state: installed
+    update_cache: yes
+  register: dep_install
+
+# Set kernel parameters of ping
+- name: Set kernel parameters/ipv4_ping
+  sysctl:
+    name: '{{ kernel_param }}'
+    value: '{{ kernel_value }}'
+    state: present
+    reload: yes
+
+# User attribute
+- name: Add user attribute
+  lineinfile:
+    path: '{{ user_path }}'
+    state: present
+    line: '{{ user_attrib }}'
+    mode: 0644
+
+# Install environment rpms
+- name: Install environment rpms
+  yum:
+    name: '{{ item }}'
+    state: installed
+    update_cache: yes
+  with_items: '{{ env_rpms }}'
+
+# Create repo for mndr
+- name: Create mndr repo
+  yum_repository:
+    name: '{{ mndr_repo}}'
+    baseurl: '{{ mndr_url }}'
+    enabled: 1
+    protect: 0
+    gpgcheck: 0
+    metadata_expire: 30
+
+# Install Unico repos
+- name: Install Unico repos
+  yum: 
+    name: '{{ item }}'
+    state: installed
+    update_cache: yes
+  with_items: '{{ unico_packages }}'
+
+# Install mndr package using rpm
+- name: Install unico-infra
+  command: 'rpm -ivh /tmp/Repos/unico-infra-services-11.3.0-4.x86_64.rpm '
+
+- name: Install unico-mndr
+  command: 'rpm -ivh /tmp/Repos/unico-mndr-3.0.0-1.x86_64.rpm'
+
+- name: Install unico-protocol
+  command: 'rpm -ivh /tmp/Repos/unico-protocol-services-11.5.0-1.x86_64.rpm'
+
+# Modify bash rc of mndr user
+- name: Modify bash file of mndr user
+  lineinfile:
+    path: '{{ bash_path }}'
+    state: present
+    line: '{{ item }}'
+    mode: 0644
+    owner: '{{ mndr_grp_usr }}'
+    group: '{{ mndr_grp_usr }}'
+  with_items: '{{ bash_items }}'

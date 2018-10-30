@@ -1,0 +1,56 @@
+---
+# mndr user/grp variables
+mndr_grp_usr: mndr
+mndr_gid: 100
+mdnr_uid: 126
+bash_path: '/home/mndr/.bashrc'
+bash_items:
+  - export OP_CONFIG_UNIQUE=mndr
+  - export PATH=${PATH}:/opt/unico/unico-mndr-3.0.0/bin:/opt/unico/unico-mndr-3.0.0/infra-services/bin:/opt/unico/unico-mndr-3.0.0/protocol-services/bin
+  - export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/opt/unico/unico-mndr-3.0.0/lib:/opt/unico/unico-mndr-3.0.0/infra-services/lib:/opt/unico/unico-mndr-3.0.0/protocol-services/lib
+  - export FSCONFIG=fsconfig
+  - export GE_EXCEPTION_ABORT=TRUE
+  - export GE_LOG_DEBUG="*;-co_*;-ina_*"
+  - export NO_HAPI=TRUE
+  - export PRIMARY_RDN_INTERFACE=eth0
+  - export SECONDARY_RDN_INTERFACE=eth0
+  - export RUN_DIR=/home/mndr/run
+  - export TZ=Australia/Victoria
+  - export UTEE_LOGNAME_PREFIX=utee_mndr
+  - unset autologoUT 
+
+user_attrib: 'mndr::::type=normal;defaultpriv=basic,net_rawaccess,net_icmpaccess,proc_priocntl,sys_net_config'
+
+# sshd config variables
+sshd_path: '/etc/ssh/sshd_config'
+sshd_process: 'sshd'
+sshd_config:
+  - { regexp: 'PermitRootLogin', line: 'PermitRootLogin yes' }
+  - { regexp: '#PasswordAuthentication', line: 'PasswordAuthentication yes' }
+
+# kernel modules depedencies
+kernel_modules:
+  - kernel-modules-extra
+  - lksctp-tools
+
+kernel_param: 'net.ipv4.ping_group_range'
+kernel_value: '1 10001'
+
+env_rpms:
+  - gdb
+  - coreutils
+  - wget
+  - ksh
+  - perl-Expect
+  - perl-Date-Manip-6.41-1.fc20.noarch # not available for centos
+  - xerces-c.x86_64
+  - libpcap.x86_64
+  - openssl-libs.x86_64
+
+mndr_repo: 'Unico-IN'
+mndr_url: 'http://devtools.dev.unico.com.au/nexus/content/repositories/unico-in-releases'
+
+unico_packages:
+  - unico-support-tools
+  - unico-freeDiameter
+  - jsoncpp

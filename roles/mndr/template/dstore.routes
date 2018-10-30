@@ -1,0 +1,46 @@
+# RCS - "$Id$"
+
+################################################################################
+#
+# Platform:
+#       MNDR
+#
+# Group name:
+#       DStore:M3UARoutes
+#
+# Description:
+#       Contains configuration entries for specifying the message routing
+#       at the M3UA protocol layer.
+#
+################################################################################
+
+INCLUDE /home/mndr/config/defines.cfg
+
+# Entry name:
+#       M3UA_ROUTES
+#
+# Description:
+#       Specifies the list of SS7 destinations that can be reached via
+#       each of the Signaling Gateways (ITPs).
+#
+*M3UA_ROUTES
+    {
+    <
+        {
+        # Application server list
+        <
+            { THIS_AS }
+        >
+    
+        # Routing table
+        <
+            # DPC    SG name     Route type
+            #
+            { MNDR_LG_SPC,  ITP1_NAME,  "ACTIVE" }  # MSC
+            { MNDR_LG_SPC,  ITP2_NAME,  "ACTIVE" }
+        >
+        }
+    >
+
+    FALSE  # Assume routes unavailable at startup
+    }

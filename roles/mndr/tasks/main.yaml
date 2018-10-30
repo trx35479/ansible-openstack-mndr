@@ -10,6 +10,13 @@
     uid: '{{ mndr_uid }}'
     group: '{{ mndr_grp_usr }}'
     state: present
+# Set hostname
+- name: Generate ramdom number (1-100)
+  set_fact:
+    var1: "{{ 100|random(1,2) }}"
+- name: Set hostname
+  hostname: 
+    name: 'mndr{{ var1 }}.{{ domain_name }}'
 
 # Work on sshd config         
 - name: Modify sshd config
@@ -21,12 +28,13 @@
   with_items: '{{ sshd_config }}' 
   notify: "Restart Sshd"
 
-# Install additional package for kernel      
-- name: Install kernel-modules/upstream release
+# Install package for kernel      
+- name: Install kernel-modules from upstream release
   yum:
-    name: '{{ kernel_modules }}'
+    name: '{{ item }}'
     state: installed
     update_cache: yes
+  with_items: '{{ kernel_modules }}'
   register: dep_install
 
 # Set kernel parameters of ping
@@ -73,13 +81,13 @@
 
 # Install mndr package using rpm
 - name: Install unico-infra
-  command: 'rpm -ivh /tmp/Repos/unico-infra-services-11.3.0-4.x86_64.rpm '
+  command: 'rpm -ivh {{ unico_infra }}'
 
 - name: Install unico-mndr
-  command: 'rpm -ivh /tmp/Repos/unico-mndr-3.0.0-1.x86_64.rpm'
+  command: 'rpm -ivh {{ unico_mndr }}'
 
 - name: Install unico-protocol
-  command: 'rpm -ivh /tmp/Repos/unico-protocol-services-11.5.0-1.x86_64.rpm'
+  command: 'rpm -ivh {{ unico_proto }}'
 
 # Modify bash rc of mndr user
 - name: Modify bash file of mndr user
@@ -91,3 +99,40 @@
     owner: '{{ mndr_grp_usr }}'
     group: '{{ mndr_grp_usr }}'
   with_items: '{{ bash_items }}'
+
+# Create a symbolic mndr binary link
+- name: Create a mndr binary symbolic link
+  file:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    state: link
+  with_items: '{{ mndr_binary_link }}'
+
+# Get the facts to be used on template
+- name: Get localhost facts
+  setup:
+  delegate_to: localhost
+
+# Templates - copy templates and modify the Diameter Endpoints
+- name: Copy configuration file fsconfig
+  template:
+    src: 'fsconfig.j2'
+    dest: '{{ fsconfig_path }}'
+    owner: '{{ mndr_grp_usr }}'
+    group: '{{ mndr_grp_usr }}'
+    mode: 0644
+- name: Copy defines.cfg template
+  template:
+    src: 'defines.cfg.j2'
+    dest: '{{ defines_path }}'
+    owner: '{{ mndr_grp_usr }}'
+    group: '{{ mndr_grp_usr }}'
+    mode: 0644
+- name: Copy destore* files
+  template:
+    src: '{{ item }}'
+    dest: '{{ template_path }}'
+    owner: '{{ mndr_grp_usr }}'
+    group: '{{ mndr_grp_usr }}'
+    mode: 0644
+  with_items: '{{ template_items }}'

@@ -1,0 +1,196 @@
+# RCS - "$Id$"
+
+################################################################################
+#
+# Platform:
+#       MNDR
+#
+# Group name:
+#       DStore:M3UA
+#
+# Description:
+#       Contains configuration entries for specifying the operational parameters
+#       of the M3UA protocol layer.
+#
+################################################################################
+
+INCLUDE /home/mndr/config/defines.cfg
+
+# Entry name:
+#       M3UA_APPLICATION_SERVERS
+#
+# Description:
+#       Specifies the list of M3UA application servers running on the system.
+#
+*M3UA_APPLICATION_SERVERS
+    {
+    <
+        {
+        THIS_AS,               # Application server name
+        "STATIC",              # Routing key reg. method
+        ROUTING_CONTEXT,       # Static routing context
+        < 2000, 2500, 3000 >,  # Congestion levels
+        TRUE,                  # Set outgoing OPC?
+
+        # Routing key
+        <
+            { "DPC", THIS_SPC },
+            { "SIO", "SCCP" }
+        >
+        }
+    >
+    }
+
+# Entry name:
+#       M3UA_ASSOCIATION_MASKS
+#
+# Description:
+#       Specifies the masks used to select SCTP associations for sending out
+#       DATA messages by M3UA to enable load sharing across multiple
+#       associations.
+#
+*M3UA_ASSOCIATION_MASKS
+    {
+    <
+        # Association  Choice of association for SLS values 0 - 15
+        # count
+        #
+        { 1,           0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0,  0,   0,  0,  0,  0  }
+        { 2,           0, 1, 1, 0,  1, 0, 0, 1,  1, 0, 0,  1,   0,  1,  1,  0  }
+        { 3,           0, 0, 1, 1,  2, 2, 0, 0,  1, 1, 2,  2,   0,  1,  2,  0  }
+        { 4,           0, 1, 2, 3,  3, 0, 1, 2,  2, 3, 0,  1,   1,  2,  3,  0  }
+        { 5,           0, 0, 1, 1,  2, 2, 3, 3,  4, 4, 0,  1,   2,  3,  4,  0  }
+        { 6,           0, 1, 2, 3,  4, 5, 0, 1,  2, 3, 4,  5,   0,  1,  2,  3  }
+        { 7,           0, 1, 2, 3,  4, 5, 6, 0,  1, 2, 3,  4,   5,  6,  0,  1  }
+        { 8,           0, 1, 2, 3,  4, 5, 6, 7,  0, 1, 2,  3,   4,  5,  6,  7  }
+        { 9,           0, 1, 2, 3,  4, 5, 6, 7,  8, 0, 1,  2,   3,  4,  5,  6  }
+        { 10,          0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 0,  1,   2,  3,  4,  5  }
+        { 11,          0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 0,   1,  2,  3,  4  }
+        { 12,          0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 11,  0,  1,  2,  3  }
+        { 13,          0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 11,  12, 0,  1,  2  }
+        { 14,          0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 11,  12, 13, 0,  1  }
+        { 15,          0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 11,  12, 13, 14, 0  }
+        { 16,          0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 11,  12, 13, 14, 15 }
+    >
+    }
+
+# Entry name:
+#       M3UA_MESSAGE_TIMERS
+#
+# Description:
+#       Specifies the response timeout for different classes of M3UA messages
+#       and the maximum number of attempts to retransmit them.
+#
+*M3UA_MESSAGE_TIMERS
+    {
+    <
+        # Message class    Response timeout (in seconds)    Number of
+        #                                                   retries
+        { "MGMT",          10,                              0 }
+        { "TNFR",          10,                              0 }
+        { "SSNM",          5,                               0 }
+        { "ASPSM",         5,                               2 }
+        { "ASPTM",         5,                               2 }
+        { "RKM",           5,                               2 }
+    >
+    }
+
+# Entry name:
+#       M3UA_SCTP_ASSOCIATIONS
+#
+# Description:
+#       Specifies the list of Signaling Gateways that the ASP is expected to
+#       connect to. For each Signaling Gateway, a unique name for the SCTP
+#       association, the type of association (ie, primary or fail-over),
+#       destination transport addresses of the peer SCTP endpoint, the number
+#       of outbound streams required for the association and other connection
+#       related parameters can be specified.
+#
+*M3UA_SCTP_ASSOCIATIONS
+    {
+    <
+        {
+        ITP1_NAME,  # Signaling Gateway name
+        <
+            {
+            "SCTP-ITP1",  # SCTP association name
+            "INST-1",     # SCTP instance name
+            "PRIMARY",    # SCTP association type (PRIMARY/FAILOVER)
+    
+            # SCTP association parameters (name, value)
+            <
+                {  "DEST_TRANSPORT_ADDRESS",  ITP1_ADDRESS_PRIMARY }
+                {  "DEST_TRANSPORT_ADDRESS",  ITP1_ADDRESS_SECONDARY }
+                {  "PRIMARY_PATH",            ITP1_ADDRESS_PRIMARY }
+                {  "SRC_PORT_NUMBER",         ITP1_SRC_PORT_NUMBER }
+                {  "CONNECT_RETRY_INTERVAL",  1000 }
+            >
+            }
+        >
+        }
+        {
+        ITP2_NAME,  # Signaling Gateway name
+        <
+            {
+            "SCTP-ITP2",  # SCTP association name
+            "INST-1",     # SCTP instance name
+            "PRIMARY",    # SCTP association type (PRIMARY/FAILOVER)
+    
+            # SCTP association parameters (name, value)
+            <
+                {  "DEST_TRANSPORT_ADDRESS",  ITP2_ADDRESS_PRIMARY }
+                {  "DEST_TRANSPORT_ADDRESS",  ITP2_ADDRESS_SECONDARY }
+                {  "PRIMARY_PATH",            ITP2_ADDRESS_PRIMARY }
+                {  "SRC_PORT_NUMBER",         ITP2_SRC_PORT_NUMBER }
+                {  "CONNECT_RETRY_INTERVAL",  1000 }
+            >
+            }
+        >
+        }
+    >
+    }
+
+# Entry name:
+#       M3UA_SCTP_INSTANCE_ATTRIBUTES
+#
+# Description:
+#       Defines the common attributes of the local SCTP instances.
+#
+*M3UA_SCTP_INSTANCE_ATTRIBUTES
+    {
+    TRUE
+    TRUE
+    }
+
+# Entry name:
+#       M3UA_STREAM_MASKS
+#
+# Description:
+#       Specifies the masks used to select outbound streams within an SCTP
+#       association for sending out DATA messages by M3UA to enable load sharing
+#       across multiple streams.
+#
+*M3UA_STREAM_MASKS
+    {
+    <
+        # Stream  Choice of streams for SLS values 0 - 15
+        # count
+        #
+        { 1,      0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0,  0,   0, 0,   0,  0  },
+        { 2,      0, 1, 0, 1,  0, 1, 0, 1,  0, 1, 0,  1,   0, 1,   0,  1  },
+        { 3,      0, 1, 2, 0,  1, 2, 0, 1,  2, 0, 1,  2,   0, 1,   2,  0  },
+        { 4,      0, 1, 2, 3,  0, 1, 2, 3,  0, 1, 2,  3,   0, 1,   2,  3  },
+        { 5,      0, 1, 2, 3,  4, 0, 1, 2,  3, 4, 0,  1,   2, 3,   4,  0  },
+        { 6,      0, 1, 2, 3,  4, 5, 0, 1,  2, 3, 4,  5,   0, 1,   2,  3  },
+        { 7,      0, 1, 2, 3,  4, 5, 6, 0,  1, 2, 3,  4,   5, 6,   0,  1  },
+        { 8,      0, 1, 2, 3,  4, 5, 6, 7,  0, 1, 2,  3,   4, 5,   6,  7  },
+        { 9,      0, 1, 2, 3,  4, 5, 6, 7,  8, 0, 1,  2,   3, 4,   5,  6  },
+        { 10,     0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 0,  1,   2, 3,   4,  5  },
+        { 11,     0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 0,   1, 2,   3,  4  },
+        { 12,     0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 11,  0, 1,   2,  3  },
+        { 13,     0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 11,  12, 0,  1,  2  },
+        { 14,     0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 11,  12, 13, 0,  1  },
+        { 15,     0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 11,  12, 13, 14, 0  },
+        { 16,     0, 1, 2, 3,  4, 5, 6, 7,  8, 9, 10, 11,  12, 13, 14, 15 }
+    >
+    }

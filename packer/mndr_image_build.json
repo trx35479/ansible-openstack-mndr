@@ -1,0 +1,32 @@
+{
+	"builders": [{
+		"type": "openstack",
+		"ssh_username": "fedora",
+		"image_name": "mndr-fedora28",
+		"source_image": "766428a1-a05a-48a9-8d6d-28c38e09ed9d",
+		"flavor": "m1.medium",
+		"security_groups": "default",
+		"floating_ip_network": "public",
+		"networks": "d7076cab-23e4-49c8-a22c-8c349cbb542a"
+	}],
+	"provisioners": [{
+			"type": "file",
+			"source": "install_ansible.sh",
+			"destination": "/tmp/install_ansible.sh"
+		},
+		{
+			"type": "shell",
+			"inline": [
+				"sudo chmod +x /tmp/install_ansible.sh",
+				"sudo sh /tmp/install_ansible.sh"
+			]
+		},
+		{
+			"type": "ansible-local",
+			"playbook_file": "playbook.yaml",
+			"role_paths":[
+				"roles/mndr"
+			]
+		}
+	]
+}

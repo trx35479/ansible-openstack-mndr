@@ -1,3 +1,23 @@
+# Install dependencies on selinux (needed if OS is Fedora)
+- name: Install selinux python library
+  yum:
+    name: '{{ selinux_python_lib }}'
+    state: installed
+    update_cache: yes
+  when: ansible_distribution == 'Fedora'
+
+- name: Install selinux python library (Centos)
+  yum:
+    name: '{{ centos_selinux }}'
+    state: installed
+    update_cache: yes
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+# Disable SELinux
+- name: Set selinux to disabled 
+  selinux:
+    state: disabled
+
 # Add mndr user/group
 - name: Add mndr group
   group:
@@ -10,6 +30,7 @@
     uid: '{{ mndr_uid }}'
     group: '{{ mndr_grp_usr }}'
     state: present
+
 # Set hostname
 - name: Generate ramdom number (1-100)
   set_fact:
@@ -28,14 +49,26 @@
   with_items: '{{ sshd_config }}' 
   notify: "Restart Sshd"
 
+# Create repo for mndr
+- name: Create mndr repo
+  yum_repository:
+    name: '{{ repos_name }}'
+    baseurl: '{{ repos_baseurl }}'
+    description: '{{ repos_desc }}'
+    enabled: yes
+    protect: no
+    gpgcheck: no
+    metadata_expire: 30
+
 # Install package for kernel      
 - name: Install kernel-modules from upstream release
   yum:
-    name: '{{ item }}'
+    name: '{{ kernel_modules }}'
     state: installed
     update_cache: yes
-  with_items: '{{ kernel_modules }}'
+#  with_items: '{{ kernel_modules }}' -- loop will be deprecated on release 2.11
   register: dep_install
+  ignore_errors: true
 
 # Set kernel parameters of ping
 - name: Set kernel parameters/ipv4_ping
@@ -44,6 +77,12 @@
     value: '{{ kernel_value }}'
     state: present
     reload: yes
+
+# Ensure user_attrib is present
+- name: Touch /etc/user_attrib
+  file:
+    path: '{{ user_path }}'
+    state: touch
 
 # User attribute
 - name: Add user attribute
@@ -56,28 +95,18 @@
 # Install environment rpms
 - name: Install environment rpms
   yum:
-    name: '{{ item }}'
+    name: '{{ env_rpms }}'
     state: installed
     update_cache: yes
-  with_items: '{{ env_rpms }}'
-
-# Create repo for mndr
-- name: Create mndr repo
-  yum_repository:
-    name: '{{ mndr_repo}}'
-    baseurl: '{{ mndr_url }}'
-    enabled: 1
-    protect: 0
-    gpgcheck: 0
-    metadata_expire: 30
+#  with_items: '{{ env_rpms }}' -- loop will be deprecated on release 2.11
 
 # Install Unico repos
 - name: Install Unico repos
   yum: 
-    name: '{{ item }}'
+    name: '{{ unico_packages }}'
     state: installed
     update_cache: yes
-  with_items: '{{ unico_packages }}'
+#  with_items: '{{ unico_packages }}' -- loop will be deprecated on release 2.11
 
 # Install mndr package using rpm
 - name: Install unico-infra

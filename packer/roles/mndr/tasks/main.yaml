@@ -1,17 +1,26 @@
-# Install dependencies on selinux (needed if OS is Fedora)
-- name: Install selinux python library
-  yum:
+# Install dependencies 
+- name: Install devops packages
+  dnf:
+    name: '{{ dev_software }}'
+    state: present
+- name: Install F5 ansible packages
+  pip:
+    name: '{{ f5_packages }}'
+    state: present
+  
+# Install selinux dependencies    
+- name: Install selinux python library (Fedora)
+  dnf:
     name: '{{ selinux_python_lib }}'
-    state: installed
-    update_cache: yes
+    state: present
   when: ansible_distribution == 'Fedora'
 
 - name: Install selinux python library (Centos)
   yum:
     name: '{{ centos_selinux }}'
-    state: installed
+    state: present
     update_cache: yes
-  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+  when: ansible_distribution == 'CentOS'
 
 # Disable SELinux
 - name: Set selinux to disabled 
@@ -19,16 +28,24 @@
     state: disabled
 
 # Add mndr user/group
+- name: Remove user using groupd id 100 (need to check if this will affect system)
+  user:
+    name: 'games'
+    state: absent
+- name: Remove the group using gid 100
+  group:
+    name: 'users'
+    state: absent
 - name: Add mndr group
   group:
-    name: '{{ mndr_grp_usr }}'
+    name: '{{ mndr_grp }}'
     gid: '{{ mndr_gid }}'
     state: present
 - name: Create mndr user
   user:
-    name: '{{ mndr_grp_usr }}'
+    name: '{{ mndr_usr }}'
     uid: '{{ mndr_uid }}'
-    group: '{{ mndr_grp_usr }}'
+    group: '{{ mndr_grp }}'
     state: present
 
 # Set hostname
@@ -56,19 +73,25 @@
     baseurl: '{{ repos_baseurl }}'
     description: '{{ repos_desc }}'
     enabled: yes
-    protect: no
     gpgcheck: no
     metadata_expire: 30
 
+# Copy binaries to tmp
+- name: Copy binaries to target node
+  copy:
+    src: '{{ item }}'
+    dest: '/tmp'
+    mode: 0655
+    owner: root
+    group: root
+  with_items: '{{ unico_binaries }}'
+
 # Install package for kernel      
 - name: Install kernel-modules from upstream release
-  yum:
+  dnf:
     name: '{{ kernel_modules }}'
-    state: installed
-    update_cache: yes
+    state: present
 #  with_items: '{{ kernel_modules }}' -- loop will be deprecated on release 2.11
-  register: dep_install
-  ignore_errors: true
 
 # Set kernel parameters of ping
 - name: Set kernel parameters/ipv4_ping
@@ -93,30 +116,30 @@
     mode: 0644
 
 # Install environment rpms
-- name: Install environment rpms
-  yum:
-    name: '{{ env_rpms }}'
-    state: installed
-    update_cache: yes
-#  with_items: '{{ env_rpms }}' -- loop will be deprecated on release 2.11
+- name: Install mndr dependecies
+  dnf:
+    name: '{{ mndr_dependecies }}'
+    state: present
 
 # Install Unico repos
 - name: Install Unico repos
-  yum: 
+  dnf: 
     name: '{{ unico_packages }}'
-    state: installed
-    update_cache: yes
-#  with_items: '{{ unico_packages }}' -- loop will be deprecated on release 2.11
+    state: present
 
-# Install mndr package using rpm
+# Install mndr package using rpm package mamager 
+- name: Install freeDiameter
+  command: 'rpm -ivh {{ unico_freediameter }}'
+  ignore_errors: yes
 - name: Install unico-infra
   command: 'rpm -ivh {{ unico_infra }}'
-
-- name: Install unico-mndr
-  command: 'rpm -ivh {{ unico_mndr }}'
-
+  ignore_errors: yes
 - name: Install unico-protocol
   command: 'rpm -ivh {{ unico_proto }}'
+  ignore_errors: yes
+- name: Install unico-mndr
+  command: 'rpm -ivh {{ unico_mndr }}'
+  ignore_errors: yes
 
 # Modify bash rc of mndr user
 - name: Modify bash file of mndr user
@@ -125,8 +148,8 @@
     state: present
     line: '{{ item }}'
     mode: 0644
-    owner: '{{ mndr_grp_usr }}'
-    group: '{{ mndr_grp_usr }}'
+    owner: '{{ mndr_usr }}'
+    group: '{{ mndr_grp }}'
   with_items: '{{ bash_items }}'
 
 # Create a symbolic mndr binary link
@@ -135,6 +158,8 @@
     src: '{{ item.src }}'
     dest: '{{ item.dest }}'
     state: link
+    owner: '{{ mndr_usr }}'
+    group: '{{ mndr_grp }}'
   with_items: '{{ mndr_binary_link }}'
 
 # Get the facts to be used on template
@@ -143,25 +168,33 @@
   delegate_to: localhost
 
 # Templates - copy templates and modify the Diameter Endpoints
+- name: Create mndr/run directory
+  file:
+    path: '{{ item }}'
+    state: directory
+    mode: 0755
+    owner: '{{ mndr_usr }}'
+    group: '{{ mndr_grp }}'
+  with_items: '{{ mndr_dir }}'
 - name: Copy configuration file fsconfig
   template:
     src: 'fsconfig.j2'
     dest: '{{ fsconfig_path }}'
-    owner: '{{ mndr_grp_usr }}'
-    group: '{{ mndr_grp_usr }}'
+    owner: '{{ mndr_usr }}'
+    group: '{{ mndr_grp }}'
     mode: 0644
 - name: Copy defines.cfg template
   template:
     src: 'defines.cfg.j2'
     dest: '{{ defines_path }}'
-    owner: '{{ mndr_grp_usr }}'
-    group: '{{ mndr_grp_usr }}'
+    owner: '{{ mndr_usr }}'
+    group: '{{ mndr_grp }}'
     mode: 0644
 - name: Copy destore* files
   template:
     src: '{{ item }}'
     dest: '{{ template_path }}'
-    owner: '{{ mndr_grp_usr }}'
-    group: '{{ mndr_grp_usr }}'
+    owner: '{{ mndr_usr }}'
+    group: '{{ mndr_grp }}'
     mode: 0644
   with_items: '{{ template_items }}'

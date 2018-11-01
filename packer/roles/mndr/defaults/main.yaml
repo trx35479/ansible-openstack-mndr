@@ -1,8 +1,13 @@
 ---
-# mndr user/grp variables
-mndr_grp_usr: mndr
-mndr_gid: 101
+# mndr user/grp variables 
+mndr_usr: 'mndr'
+mndr_grp: 'in'
+mndr_gid: 100
 mndr_uid: 126
+mndr_dir: 
+  - '/home/{{ mndr_usr }}/run'
+  - '/home/{{ mndr_usr }}/config'
+  - '/home/{{ mndr_usr }}/dbase'
 bash_path: '/home/mndr/.bashrc'
 bash_items:
   - export OP_CONFIG_UNIQUE=mndr
@@ -17,10 +22,9 @@ bash_items:
   - export RUN_DIR=/home/mndr/run
   - export TZ=Australia/Victoria
   - export UTEE_LOGNAME_PREFIX=utee_mndr
-  - unset autologoUT 
+  - unset autologout
 
 domain_name: 'unico.com.au'
-distro: '{{ ansible_distribution }}'
 
 user_path: '/etc/user_attr'
 user_attrib: 'mndr::::type=normal;defaultpriv=basic,net_rawaccess,net_icmpaccess,proc_priocntl,sys_net_config'
@@ -30,31 +34,33 @@ sshd_path: '/etc/ssh/sshd_config'
 sshd_process: 'sshd'
 sshd_config:
   - { regexp: 'PermitRootLogin', line: 'PermitRootLogin yes' }
-  - { regexp: '#PasswordAuthentication', line: 'PasswordAuthentication yes' }
+  - { regexp: '#PasswordAuthentication no', line: 'PasswordAuthentication yes' }
 
 # kernel modules depedencies
 kernel_modules:
   - kernel-modules-extra
   - lksctp-tools
 
-selinux_python_lib: 'ibselinux-python'
+selinux_python_lib: 'python2-libselinux'
 centos_selinux: 'selinux-policy'
 
 kernel_param: 'net.ipv4.ping_group_range'
 kernel_value: '1 10001'
 
-env_rpms:
+mndr_dependecies:
   - gdb
   - coreutils
   - wget
   - ksh
   - perl-Expect
-#  - perl-Date-Manip-6.60-2.fc28.noarch # replacement 
+  - perl-Date-Manip-6.60-2.fc28.noarch # on fedora 28
   - xerces-c.x86_64
   - libpcap.x86_64
   - openssl-libs.x86_64
-  - perl-Date-Manip-6.41-2.el7.noarch # replacement for centos
+#  - perl-Date-Manip-6.41-2.el7.noarch # replacement for centos
 #  - perl-Date-Manip-6.41-1.fc20.noarch # for fedora 20
+  - libidn* # needed by freeDiameter
+  - ruby # needed by mndr package
 
 repos_name: 'Unico-IN'
 repos_baseurl: 'http://devtools.dev.unico.com.au/nexus/content/repositories/unico-in-releases'
@@ -62,19 +68,25 @@ repos_desc: 'Unico Mndr build repos'
 
 unico_packages:
   - unico-support-tools
-  - unico-freeDiameter
   - jsoncpp
 
-unico_infra: '/tmp/Repos/unico-infra-services-11.3.0-4.x86_64.rpm'
-unico_mndr: '/tmp/Repos/unico-mndr-3.0.0-1.x86_64.rpm'
-unico_proto: '/tmp/Repos/unico-protocol-services-11.5.0-1.x86_64.rpm'
+unico_binaries:
+  - unico-freeDiameter-1.2.1-rc1u4.x86_64.rpm
+  - unico-infra-services-11.3.0-0.x86_64.rpm
+  - unico-protocol-services-11.5.0-0.x86_64.rpm
+  - unico-mndr-3.0.0-0.x86_64.rpm
+
+unico_freediameter: '/tmp/unico-freeDiameter-1.2.1-rc1u4.x86_64.rpm'
+unico_infra: '/tmp/unico-infra-services-11.3.0-0.x86_64.rpm'
+unico_proto: '/tmp/unico-protocol-services-11.5.0-0.x86_64.rpm'
+unico_mndr: '/tmp/unico-mndr-3.0.0-0.x86_64.rpm'
 
 mndr_binary_link:
   - { src: '/opt/unico/unico-mndr-3.0.0/lib', dest: '/home/mndr/lib' }
   - { src: '/opt/unico/unico-mndr-3.0.0/bin', dest: '/home/mndr/bin' }
 
 int1: '{{ ansible_eth0.ipv4.address }}'
-int2: '{{ ansible_eth1.ipv4.address }}'
+int2: '{{ ansible_eth0.ipv4.address }}'
 
 diameter_uri: 'aaa://{{ ansible_fqdn }}:3868'
 diameter_realm: '{{ ansible_domain }}'
@@ -86,3 +98,14 @@ template_items:
   - dstore.routes
   - dstore.sccp
   - dstore.mndr
+
+dev_software: 
+  - python-pip
+  - python-virtualenv
+  - ansible
+
+f5_packages:
+  - f5-sdk
+  - bigsuds
+  - netaddr
+  - deepdiff

@@ -11,19 +11,19 @@
 	}],
 	"provisioners": [{
 			"type": "file",
-			"source": "install_ansible.sh",
-			"destination": "/tmp/install_ansible.sh"
+			"source": "install_python27.sh",
+			"destination": "/tmp/install_python27.sh"
 		},
 		{
 			"type": "shell",
 			"inline": [
-				"sudo chmod +x /tmp/install_ansible.sh",
-				"sudo sh /tmp/install_ansible.sh"
+				"sudo chmod +x /tmp/install_python27.sh",
+				"sudo sh /tmp/install_python27.sh"
 			]
 		},
 		{
 			"type": "ansible-local",
-			"playbook_file": "playbook.yaml",
+			"playbook_file": "mndr.yaml",
 			"role_paths":[
 				"roles/mndr"
 			]

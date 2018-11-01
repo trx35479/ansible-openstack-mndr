@@ -1,0 +1,7 @@
+---
+- name: Packaging MNDR software to base image
+  gather_facts: true
+  hosts: localhost
+  become: true
+  roles:
+    - mndr

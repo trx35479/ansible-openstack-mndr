@@ -53,3 +53,14 @@ Deploying Heat Orchestration Template (HOT) on Openstack
 | ce2aea98-7eeb-449d-9abe-b200cf031656 | mndr       | CREATE_COMPLETE | 2018-10-24T05:25:26Z | None         |
 +--------------------------------------+------------+-----------------+----------------------+--------------+
 
+--------------------------------------------------------------------------------
+# To build the image using the packer
+-------------------------------------------------------------------------------
+1. Go to packer directory
+   git clone https://github.com/trx35479/mndr-openstack.git
+   cd mndr-openstack/packer
+
+2. Execute below
+   packer build mndr_image_build.json
+
+Note: Packer should have been installed on the host

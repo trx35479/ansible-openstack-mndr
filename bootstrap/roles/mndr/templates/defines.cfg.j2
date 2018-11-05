@@ -1,0 +1,86 @@
+# RCS - "$Id$"
+
+################################################################################
+#
+# Platform:
+#       MNDR
+#
+# Group name:
+#       N/A
+#
+# Description:
+#       Contains global, site and host specific definitions required by FSCONFIG
+#       and DStore configuration groups.
+#
+################################################################################
+
+# Host specific definitions.
+#
+DEFINSTR ( THIS_MPLEX,                  "{{ ansible_hostname }}" ) # A unique name for this MNDR multiplex
+DEFINSTR ( THIS_HOST,                   "{{ ansible_hostname }}" ) # A unique name for this MNDR host
+
+DEFINVAL ( THIS_ASP_ID,                 1 ) # A unique ASP identifier for this MNDR host
+DEFINSTR ( THIS_GT,                     "61418070366" ) # SCCP GT of this MNDR host
+
+DEFINSTR ( REALNET_CH_ETH1,             "{{ int1 }}" ) # Primary IP address of the MNDR host (REALNET Call Handling)
+DEFINSTR ( REALNET_CH_ETH2,             "{{ int2 }}" ) # Secondary IP address of the MNDR host (REALNET Call Handling)
+
+DEFINSTR ( REALNET_NCH_ETH1,            "{{ int1 }}" ) # Primary IP address of the MNDR host (REALNET Non-Call Handling)
+DEFINSTR ( REALNET_NCH_ETH2,            "{{ int2 }}" ) # Secondary IP address of the MNDR host (REALNET Non-Call Handling)
+
+DEFINSTR ( RDN_ETH1,                    "{{ int1 }}" ) # Primary IP address of the MNDR host (SIGTRAN RDN) - need to be able to bind to this address locally.
+DEFINSTR ( RDN_ETH2,                    "{{ int2 }}" ) # Secondary IP address of the MNDR host (SIGTRAN RDN)
+DEFINSTR ( DIAM_ETH1,                   "{{ int1 }}" ) # Primary IP address of the MNDR host (DIAMETER)
+
+DEFINSTR ( OPNET_ETH1,                  "{{ int1 }}" ) # Primary IP address of the MNDR host (OPNET)
+DEFINSTR ( OPNET_ETH2,                  "{{ int2 }}" ) # Secondary IP address of the MNDR host (OPNET)
+
+# Site specific definitions.
+#
+DEFINSTR ( THIS_AS,                     "MNDR" ) # Name of the MNDR application server (AS)
+DEFINVAL ( THIS_SPC,                    5001 ) # Signaling point code of the MNDR AS
+
+DEFINSTR ( ITP1_NAME,                   "LNIG" ) # Name of the first signaling gateway (SG)
+DEFINSTR ( ITP1_ADDRESS_PRIMARY,        "10.40.2.171: 2317" ) # Primary destination path and port number
+DEFINSTR ( ITP1_ADDRESS_SECONDARY,      "10.40.3.171: 2317" ) # Failover destination path and port number
+DEFINVAL ( ITP1_SRC_PORT_NUMBER,        9201 ) # Local port number to use to connect to the first SG
+
+DEFINSTR ( ITP2_NAME,                   "WIIG" ) # Name of the second signaling gateway (SG)
+DEFINSTR ( ITP2_ADDRESS_PRIMARY,        "10.40.2.178: 2318" ) # Primary destination path and port number
+DEFINSTR ( ITP2_ADDRESS_SECONDARY,      "10.40.3.178: 2318" ) # Failover destination path and port number
+DEFINVAL ( ITP2_SRC_PORT_NUMBER,        9202 ) # Local port number to use to connect to the second SG
+
+#DEFINSTR ( LDAP_MNDR_DSA_CH_IP_LOCAL,   "10.230.4.24" ) # IPMP address of the local LDAP MNDR DSA node (Call Handling)
+#DEFINSTR ( LDAP_MNDR_DSA_CH_IP_REMOTE,  "10.230.4.24" ) # IPMP address of the remote LDAP MNDR DSA node (Call Handling)
+DEFINSTR ( LDAP_MNDR_DSA_CH_IP_LOCAL,   "192.168.203.150" ) # IPMP address of the local LDAP MNDR DSA node (Call Handling)
+DEFINSTR ( LDAP_MNDR_DSA_CH_IP_REMOTE,  "192.168.203.150" ) # IPMP address of the remote LDAP MNDR DSA node (Call Handling)
+#DEFINSTR ( LDAP_MNDR_DSA_CH_IP_LOCAL,   "10.0.0.9" ) # IPMP address of the local LDAP MNDR DSA node (Call Handling)
+#DEFINSTR ( LDAP_MNDR_DSA_CH_IP_REMOTE,  "10.0.0.9" ) # IPMP address of the remote LDAP MNDR DSA node (Call Handling)
+DEFINVAL ( LDAP_MNDR_DSA_CH_PORT_NUMBER,   16611 )  # Port number on the LDAP MNDR DSA node to connect to
+
+#DEFINSTR ( LDAP_MNDR_DSA_NCH_IP_LOCAL,  "10.230.4.24" ) # IPMP address of the local LDAP MNDR DSA node (Non-Call Handling)
+#DEFINSTR ( LDAP_MNDR_DSA_NCH_IP_REMOTE, "10.230.4.24" ) # IPMP address of the remote LDAP MNDR DSA node (Non-Call Handling)
+DEFINSTR ( LDAP_MNDR_DSA_NCH_IP_LOCAL,   "192.168.203.150" ) # IPMP address of the local LDAP MNDR DSA node (Non-Call Handling)
+DEFINSTR ( LDAP_MNDR_DSA_NCH_IP_REMOTE,  "192.168.203.150" ) # IPMP address of the remote LDAP MNDR DSA node (Non-Call Handling)
+#DEFINSTR ( LDAP_MNDR_DSA_NCH_IP_LOCAL,  "10.0.0.9" ) # IPMP address of the local LDAP MNDR DSA node (Non-Call Handling)
+#DEFINSTR ( LDAP_MNDR_DSA_NCH_IP_REMOTE, "10.0.0.9" ) # IPMP address of the remote LDAP MNDR DSA node (Non-Call Handling)
+
+DEFINVAL ( LDAP_MNDR_DSA_NCH_PORT_NUMBER,   16611 )  # Port number on the LDAP MNDR DSA node to connect to
+
+# Global definitions.
+#
+DEFINVAL ( ROUTING_CONTEXT,             THIS_SPC ) # Routing context for MNDR AS
+DEFINVAL ( MNDR_LG_SPC,                 6001 )     # or 9916 for MSC
+
+DEFINSTR ( MNDR_LG_GT,                  "61418070323" )
+DEFINVAL ( MNDR_SSN,                    9 ) # SCCP SSN for MNDR
+
+DEFINSTR ( TDSDI_IP_PRIMARY,            "192.168.203.150" ) # Primary IP address of the TDSDI host
+DEFINSTR ( TDSDI_IP_SECONDARY,          "192.168.203.150" ) # Secondary IP address of the TDSDI host
+DEFINVAL ( TDSDI_PORT_NUMBER,           11200 ) # Port number on the TDSDI host to connect to
+
+DEFINSTR ( LDAP_MNDR_DSA_ID,            "6" ) # LDAP dsaId of MNDR DSA
+DEFINSTR ( LDAP_IDENTITY_DSA_ID,        "2" ) # LDAP dsaId of Identity DSA
+
+DEFINSTR ( DIAMETER_URI,   "{{ diameter_uri }}" )
+DEFINSTR ( DIAMETER_REALM, "{{ diameter_realm }}" )

@@ -2,7 +2,7 @@
 	"builders": [{
 		"type": "openstack",
 		"ssh_username": "fedora",
-		"image_name": "mndr-fedora28",
+		"image_name": "mndr-fedora28-base",
 		"source_image": "766428a1-a05a-48a9-8d6d-28c38e09ed9d",
 		"flavor": "m1.medium",
 		"security_groups": "default",
@@ -14,10 +14,16 @@
 			"source": "install_python27.sh",
 			"destination": "/tmp/install_python27.sh"
 		},
+                {
+                        "type": "file",
+                        "source": "package.tar",
+                        "destination": "/tmp/package.tar"
+                },
 		{
 			"type": "shell",
 			"inline": [
 				"sudo chmod +x /tmp/install_python27.sh",
+                                "sudo tar -xvf /tmp/package.tar",
 				"sudo sh /tmp/install_python27.sh"
 			]
 		},
@@ -25,7 +31,7 @@
 			"type": "ansible-local",
 			"playbook_file": "mndr.yaml",
 			"role_paths":[
-				"roles/mndr"
+				"packer/roles/mndr"
 			]
 		}
 	]

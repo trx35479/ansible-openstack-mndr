@@ -1,0 +1,27 @@
+# mndr user/grp variables 
+mndr_usr: 'mndr'
+mndr_grp: 'in'
+mndr_dir: 
+  - '/home/{{ mndr_usr }}/run'
+  - '/home/{{ mndr_usr }}/config'
+  - '/home/{{ mndr_usr }}/dbase'
+
+# Diameter config parameter
+diameter_uri: 'aaa://{{ ansible_fqdn }}:3868'
+diameter_realm: '{{ ansible_domain }}'
+
+# MNDR configuration parameter
+fsconfig_path: '/home/mndr/run/fsconfig'
+defines_path: '/home/mndr/config/defines.cfg'
+template_path: '/home/mndr/config/'
+template_items:
+  - dstore.m3ua
+  - dstore.routes
+  - dstore.sccp
+  - dstore.mndr
+
+# Host specific parameter
+domain_name: 'unico.com.au'
+int1: '{{ ansible_eth0.ipv4.address }}'
+int2: '{{ ansible_eth0.ipv4.address }}'
+hosts_path: '/etc/hosts'

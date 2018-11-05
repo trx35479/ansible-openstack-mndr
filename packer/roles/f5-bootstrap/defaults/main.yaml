@@ -1,0 +1,7 @@
+---
+password: 'iops123!'
+username: 'admin'
+server: '10.0.0.13'
+pool_name: 'MNDR-SCTP-pool'
+api_port: '8443'
+dia_port: '3868'

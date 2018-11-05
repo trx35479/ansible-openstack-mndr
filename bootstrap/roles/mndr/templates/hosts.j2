@@ -1,0 +1,8 @@
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+10.230.4.24 cdb01 cdb01.unico.com.au # cdb vm
+10.230.4.22 thsrv01 thsrv01.unico.com.au # tdsi vm
+192.168.203.150 indemo1.dev.unico.com.au indemo1 # test endpoit
+192.168.203.151 indemo2.dev.unico.com.au indemo2 # test endpoint
+10.0.0.13 host-10-0-0-13.unico.com.au host-10-0-0-13 # f5-loadbalancer
+{{ ansible_eth0.ipv4.address }} {{ ansible_fqdn }} {{ ansible_hostname }}

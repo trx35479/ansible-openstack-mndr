@@ -1,0 +1,52 @@
+---
+# Set hostname
+- name: Generate ramdom number (1-100)
+  set_fact:
+    var1: "{{ 100|random(1,2) }}"
+- name: Set hostname
+  hostname:
+    name: 'mndr{{ var1 }}.{{ domain_name }}'
+
+# Get the facts to be used on template
+- name: Get localhost facts
+  setup:
+  delegate_to: localhost
+
+# Templates - copy templates and modify the Diameter Endpoints
+- name: Create mndr directory
+  file:
+    path: '{{ item }}'
+    state: directory
+    mode: 0755
+    owner: '{{ mndr_usr }}'
+    group: '{{ mndr_grp }}'
+  with_items: '{{ mndr_dir }}'
+- name: Copy configuration file fsconfig
+  template:
+    src: 'fsconfig.j2'
+    dest: '{{ fsconfig_path }}'
+    owner: '{{ mndr_usr }}'
+    group: '{{ mndr_grp }}'
+    mode: 0644
+- name: Copy defines.cfg template
+  template:
+    src: 'defines.cfg.j2'
+    dest: '{{ defines_path }}'
+    owner: '{{ mndr_usr }}'
+    group: '{{ mndr_grp }}'
+    mode: 0644
+- name: Copy destore* files
+  template:
+    src: '{{ item }}'
+    dest: '{{ template_path }}'
+    owner: '{{ mndr_usr }}'
+    group: '{{ mndr_grp }}'
+    mode: 0644
+  with_items: '{{ template_items }}'
+- name: Update the hosts file to add the local ip/hostname mapping (needed to start the application)
+  template:
+    src: 'hosts.j2'
+    dest: '{{ hosts_path }}'
+    owner: root
+    group: root
+    mode: 0644

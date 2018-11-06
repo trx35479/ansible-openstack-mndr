@@ -7,7 +7,8 @@
 		"flavor": "m1.medium",
 		"security_groups": "default",
 		"floating_ip_network": "public",
-		"networks": "d7076cab-23e4-49c8-a22c-8c349cbb542a"
+		"networks": "59956be2-f1d2-45ad-b479-3e992d5100f7",
+                "image_visibility": "public"
 	}],
 	"provisioners": [{
 			"type": "file",
@@ -16,14 +17,14 @@
 		},
                 {
                         "type": "file",
-                        "source": "package.tar",
-                        "destination": "/tmp/package.tar"
+                        "source": "bootstrap.tar",
+                        "destination": "/tmp/bootstrap.tar"
                 },
 		{
 			"type": "shell",
 			"inline": [
 				"sudo chmod +x /tmp/install_python27.sh",
-                                "sudo tar -xvf /tmp/package.tar",
+                                "sudo tar -xvf /tmp/bootstrap.tar",
 				"sudo sh /tmp/install_python27.sh"
 			]
 		},

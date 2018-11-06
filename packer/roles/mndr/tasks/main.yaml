@@ -48,6 +48,14 @@
     group: '{{ mndr_grp }}'
     state: present
 
+# Set root password
+- name: Set root password
+  user:
+    name: 'root'
+    password: "{{ 'linux123' | password_hash('sha512') }}"
+    state: present
+    expires: 99999
+
 # Set hostname
 #- name: Generate ramdom number (1-100)
 #  set_fact:
@@ -57,14 +65,20 @@
 #    name: 'mndr{{ var1 }}.{{ domain_name }}'
 
 # Work on sshd config         
-- name: Modify sshd config
-  lineinfile: 
-    path: '{{ sshd_path }}' 
-    state: present 
-    regexp: '{{ item.regexp }}' 
-    line: '{{ item.line }}'
-  with_items: '{{ sshd_config }}' 
-  notify: "Restart Sshd"
+#- name: Modify sshd config
+#  lineinfile: 
+#    path: '{{ sshd_path }}' 
+#    state: present 
+#    regexp: '{{ item.regexp }}' 
+#    line: '{{ item.line }}'
+#  with_items: '{{ sshd_config }}' 
+#  notify: "Restart Sshd"
+# Remove line in a file using regex
+#- name: Replace the line in a ssh config file
+#  lineinfile:
+#    path: '{{ sshd_path }}'
+#    regexp: '{{ sshd_pass_string }}'
+#    line: '{{ sshd_pass_line }}'
 
 # Create repo for mndr
 - name: Create mndr repo

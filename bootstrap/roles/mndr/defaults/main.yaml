@@ -25,3 +25,10 @@ domain_name: 'unico.com.au'
 int1: '{{ ansible_eth0.ipv4.address }}'
 int2: '{{ ansible_eth0.ipv4.address }}'
 hosts_path: '/etc/hosts'
+
+# Working on SSH
+# sshd config variables
+sshd_path: '/etc/ssh/sshd_config'
+sshd_process: 'sshd'
+sshd_pass_string: '^PasswordAuthentication no'
+sshd_pass_line: 'PasswordAuthentication yes' 

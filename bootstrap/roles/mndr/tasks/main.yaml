@@ -7,6 +7,14 @@
   hostname:
     name: 'mndr{{ var1 }}.{{ domain_name }}'
 
+# Work on SSH
+- name: Replace the line in a ssh config file
+  lineinfile:
+    path: '{{ sshd_path }}'
+    regexp: '{{ sshd_pass_string }}'
+    line: '{{ sshd_pass_line }}'
+  notify: 'Restart Sshd'
+
 # Get the facts to be used on template
 - name: Get localhost facts
   setup:

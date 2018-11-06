@@ -24,6 +24,8 @@ bash_items:
   - export UTEE_LOGNAME_PREFIX=utee_mndr
   - unset autologout
 
+root_pass_hash: '$6$LwpR9cYNKHS$r1weR/65yUcJblnhKGopfIwUveJ/444jCIe94DYqRp9M5519Oe0sis22k/ZfW3MF16VM3uUdEfmhFnsRECN3h/'
+
 domain_name: 'unico.com.au'
 
 user_path: '/etc/user_attr'
@@ -32,9 +34,11 @@ user_attrib: 'mndr::::type=normal;defaultpriv=basic,net_rawaccess,net_icmpaccess
 # sshd config variables
 sshd_path: '/etc/ssh/sshd_config'
 sshd_process: 'sshd'
-sshd_config:
-  - { regexp: 'PermitRootLogin', line: 'PermitRootLogin yes' }
-  - { regexp: '#PasswordAuthentication no', line: 'PasswordAuthentication yes' }
+#sshd_config:
+#  - { regexp: 'PermitRootLogin no', line: 'PermitRootLogin yes' }
+#  - { regexp: '#PasswordAuthentication no', line: 'PasswordAuthentication yes' }
+sshd_pass_string: '^PasswordAuthentication'
+sshd_pass_line: 'PasswordAuthentication yes'
 
 # kernel modules depedencies
 kernel_modules:

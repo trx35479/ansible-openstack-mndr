@@ -1,0 +1,99 @@
+# RCS - "$Id$"
+
+################################################################################
+#
+# Platform:
+#       MNDR
+#
+# Group name:
+#       DStore:SCCP
+#
+# Description:
+#       Contains configuration entries for specifying the operational parameters
+#       of the SCCP protocol layer.
+#
+################################################################################
+
+INCLUDE /home/mndr/config/defines.cfg
+
+# Entry name:
+#       SCCP_CONCERNED_SPS
+#
+# Description:
+#       Specifies the remote signaling points that will be informed when
+#       certain subsystems on a SCCP signaling point change their state.
+#
+*SCCP_CONCERNED_SPS
+    {
+    # SPC        SSN        Concerned SPs
+    #
+    { THIS_SPC,  MNDR_SSN,  <> }
+    }
+
+# Entry name:
+#       SCCP_CONCERNED_SSNS
+#
+# Description:
+#       Specifies the local subsystems that will be informed when certain
+#       subsystems on a SCCP signaling point change their state..
+#
+*SCCP_CONCERNED_SSNS
+    {
+    # SPC        SSN        Concerned SSNs
+    #
+    { THIS_SPC,  MNDR_SSN,  <> }
+    }
+
+# Entry name:
+#       SCCP_INCOMING_GLOBAL_TITLE_TRANSLATIONS
+#
+# Description:
+#       Specifies the Global Title (GT) translations to be performed on the
+#       destination address of incoming SCCP messages to determine the local
+#       subsystem for delivering them.
+#
+*SCCP_INCOMING_GLOBAL_TITLE_TRANSLATIONS
+    {
+    0,  # Translation type
+    <
+        # Start of    End of      Numbering  Nature of  {SPC,Weight}     Selection       SSN        Routing
+        # range       range       plan       address    List             method                     method
+        #
+        #{ MASTER_GT,  MASTER_GT,  1,         4,         < {0, 1} >,      FAIL_OVER,      MNDR_SSN,  0  }  # Master GT
+        { THIS_GT,    THIS_GT,    1,         4,         < {0, 1} >,      FAIL_OVER,      MNDR_SSN,  0  }  # MNDR ASP GT
+    >
+    }
+
+# Entry name:
+#       SCCP_OUTGOING_GLOBAL_TITLE_TRANSLATIONS
+#
+# Description:
+#       Specifies the Global Title (GT) translations to be performed on the
+#       destination address of outgoing SCCP messages to determine the remote
+#       signaling point and subsystem for delivering them.
+#
+*SCCP_OUTGOING_GLOBAL_TITLE_TRANSLATIONS
+    {
+    0,  # Translation type
+    <
+        # Start of        End of          Numbering  Nature of  {SPC, Weight}    Selection SSN  Routing
+        # range           range           plan       address    List             method         method
+        #
+        { MNDR_LG_GT,  MNDR_LG_GT,  1,         4,         < {MNDR_LG_SPC,1 } >    FAIL_OVER, 8,   0  }  # MSC
+    >
+    }
+
+# Entry name:
+#       SCCP_ROUTES
+#
+# Description:
+#       Specifies signaling points and subsystems to which SCCP messages
+#       may be sent.
+#
+*SCCP_ROUTES
+    {
+    # SPC        SSN list
+    #
+    { THIS_SPC,  < MNDR_SSN > }  # MNDR
+    { MNDR_LG_SPC,      < 8 > }  # MSC
+    }

@@ -1,0 +1,201 @@
+# RCS - "$Id$"
+
+################################################################################
+#
+# Platform:
+#       MNDR
+#
+# Group name:
+#       DStore:MNDR
+# 
+# Description:
+#       Contains configuration entries for specifying the operational
+#       parameters of the MNDR application.
+#
+################################################################################
+
+INCLUDE /home/mndr/config/defines.cfg
+
+# Entry name:
+#       MNDR_IMEI_CHECK_PROCESSING_DETAILS
+#
+# Description:
+#       Specifies parameters that control the MAP_CHECK_IMEI service request
+#       processing by the MNDR platform.
+#
+*MNDR_IMEI_CHECK_PROCESSING_DETAILS
+    {
+        {
+        "MAP_V1",       # Interface from the SGSNs
+
+        # IMSI inclusion prefix list
+        < 
+            { 50501 }     
+        >
+
+        # IMSI exclusion prefix list
+        <
+            { "5050145" }  # BOOST prepaid
+            { "5050156" }  # WME wholesale
+        >
+
+        30,             # Last seen date refresh interval (in days)
+        FALSE,          # "Not-to-be-blocked list" has priority over "TAC list"
+        TRUE,           # TAC list checking enabled
+        TRUE,           # Grey list support disabled
+        TRUE,          # Black list support enabled
+        "WHITE"         # Default equipment status
+        }
+
+        {
+        "MAP_V2",       # Interface from the MSCs
+
+        # IMSI inclusion prefix list
+        <
+            { 50501 }
+        >
+
+        # IMSI exclusion prefix list
+        <
+            { "5050145" }  # BOOST prepaid
+            { "5050156" }  # WME wholesale
+        >
+
+        30,             # Last seen date refresh interval (in days)
+        FALSE,          # "Not-to-be-blocked list" has priority over "TAC list"
+        TRUE,           # TAC list checking enabled
+        TRUE,           # Grey list support disabled
+        TRUE,          # Black list support enabled
+        "WHITE"         # Default equipment status
+        }
+
+        {
+        "DIAMETER_S13", # Interface from the MMEs
+
+        # IMSI inclusion prefix list
+        <
+            { 50501 }
+        >
+
+        # IMSI exclusion prefix list
+        <
+            { "5050145" }  # BOOST prepaid
+            { "5050156" }  # WME wholesale
+        >
+
+        30,             # Last seen date refresh interval (in days)
+        FALSE,          # "Not-to-be-blocked list" has priority over "TAC list"
+        TRUE,           # TAC list checking enabled
+        TRUE,           # Grey list support disabled
+        TRUE,          # Black list support enabled
+        "WHITE"         # Default equipment status
+        }
+    }
+
+# Entry name:
+#       MNDR_LDAP_CONNECTION_DETAILS
+#
+# Description:
+#       Specifies a list of preferred LDAP servers for each distinct
+#       processing module on the MNDR platform. The physical connection
+#       details for each server Id listed here shall be defined using
+#       the generic LDAP_SERVER_DETAILS configuration entry found within
+#       the FSCONFIG group for MNDR.
+#
+*MNDR_LDAP_CONNECTION_DETAILS
+    {
+    <
+        # Module name               Server Id list
+        #
+        { "MNDR_EIR",               < { "LDAP_QUERY" } > }
+        { "MNDR_IMSI_ASSOC_STORE",  < { "LDAP_PROV" } > }
+    >
+    }
+
+# Entry name:
+#       MNDR_TDSDI_CONNECTION_DETAILS
+#
+# Description:
+#       Specifies details of the TCP/IP interface to TDSDI from MNDR.
+# 
+*MNDR_TDSDI_CONNECTION_DETAILS
+    {
+    # List of servers to connect
+    <
+        # Primary            Secondary            Port                Max. no.
+        # interface          interface            number              of conn.
+        #
+        { TDSDI_IP_PRIMARY,  TDSDI_IP_SECONDARY,  TDSDI_PORT_NUMBER,  20 }
+    >
+
+    1,      # Initial no. of connection to be established
+    20,     # Maximum no. of active connection allowed
+
+    0,      # Idle connection timeout (s)
+    5,      # Connection Timeout (s)
+    300,    # Response timeout (s)
+    300,    # Retry period (s)
+
+    1000,   # Throttling interval (ms)
+    5,      # Maximum no. of commands to be sent to the server during each
+            # throttling interval
+
+    5,      # Receive timeout (s)
+    TRUE,   # Use load sharing
+    13      # Message delimiter
+    }
+
+# Entry name:
+#       MNDR_IMSI_ASSOCIATION_UPDATE
+#
+# Description:
+#       Specifies parameters that determine which of the new/changed
+#       IMSI/IMEI associations detected by MNDR are forwarded to TDSDI.
+#       Also specifies parameters that determine under what circumstances
+#       the new/changed IMSI/IMEI associations are stored on LDAP.
+#
+*MNDR_IMSI_ASSOCIATION_UPDATE
+    {
+    # List of SPIDs for which TDSDI update is not required
+    <
+        { "0254" }
+    >
+
+    # LDAP update enabled
+    #
+    TRUE
+
+    # List of TDSDI error codes for which LDAP update is to be performed
+    <
+        { 0 }    # Success
+        { 2 }    # Service not found
+    >
+
+    # Include imsi attribute in the mndrService object
+    #
+    TRUE
+    }
+
+# Entry name:
+#       MNDR_SVN_PROCESSING_DETAILS
+#
+# Description:
+#       Specifies parameters that determine which combinations of IMSI, IMEI
+#       and SVN need to be sent to TDSDI. This configuration entry will also
+#       define a list of IMEI prefixes (white list) for which any change of SVN
+#       is considered a trigger for sending an NIA message to TDSDI if the
+#       particular algorithm is in use. It is expected that the white list will
+#       identify handset models capable of VoLTE.
+#
+*MNDR_SVN_PROCESSING_DETAILS
+    {
+    # TDSDI update algorithm
+    #
+    "SVN_CHANGE_ALWAYS",  
+
+    # White list of IMEI prefixes
+    <
+        { "35695806" }  # iPhone 6
+        { "35438206" }  # iPhone 6 Plus
+    >
+    }

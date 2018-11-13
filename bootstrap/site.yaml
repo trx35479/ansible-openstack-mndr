@@ -4,5 +4,5 @@
   gather_facts: true
   become: true
   roles:
-    - mndr
+    - mndr-bootstrap
     - mndr-f5

@@ -1,0 +1,122 @@
+---
+# mndr user/grp variables 
+mndr_usr: 'mndr'
+mndr_grp: 'in'
+mndr_gid: 200
+mndr_uid: 226
+mndr_dir: 
+  - '/home/{{ mndr_usr }}/run'
+  - '/home/{{ mndr_usr }}/config'
+  - '/home/{{ mndr_usr }}/dbase'
+bash_path: '/home/mndr/.bashrc'
+bash_items:
+  - export OP_CONFIG_UNIQUE=mndr
+  - export PATH=${PATH}:/opt/unico/unico-mndr-3.0.0/bin:/opt/unico/unico-mndr-3.0.0/infra-services/bin:/opt/unico/unico-mndr-3.0.0/protocol-services/bin
+  - export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/opt/unico/unico-mndr-3.0.0/lib:/opt/unico/unico-mndr-3.0.0/infra-services/lib:/opt/unico/unico-mndr-3.0.0/protocol-services/lib
+  - export FSCONFIG=fsconfig
+  - export GE_EXCEPTION_ABORT=TRUE
+  - export GE_LOG_DEBUG="*"
+  - export NO_HAPI=TRUE
+  - export PRIMARY_RDN_INTERFACE=eth0
+  - export SECONDARY_RDN_INTERFACE=eth0
+  - export RUN_DIR=/home/mndr/run
+  - export TZ=Australia/Victoria
+  - export UTEE_LOGNAME_PREFIX=utee_mndr
+  - unset autologout
+
+mndr_tz: 'Australia/Melbourne'
+
+root_pass_hash: '$6$LwpR9cYNKHS$r1weR/65yUcJblnhKGopfIwUveJ/444jCIe94DYqRp9M5519Oe0sis22k/ZfW3MF16VM3uUdEfmhFnsRECN3h/'
+
+domain_name: 'unico.com.au'
+
+user_path: '/etc/user_attr'
+user_attrib: 'mndr::::type=normal;defaultpriv=basic,net_rawaccess,net_icmpaccess,proc_priocntl,sys_net_config'
+
+# sshd config variables
+sshd_path: '/etc/ssh/sshd_config'
+sshd_process: 'sshd'
+sshd_pass_string: '^PasswordAuthentication no'
+sshd_pass_line: 'PasswordAuthentication yes'
+
+# kernel modules depedencies
+kernel_modules:
+#  - kernel-modules-extra
+  - lksctp-tools
+
+fedora_selinux_python_lib: 'libselinux-python'
+centos_selinux_python_lib: 'selinux-policy'
+
+kernel_param: 'net.ipv4.ping_group_range'
+kernel_value: '1 10001'
+
+mndr_dependecies:
+  - gdb
+  - coreutils
+  - wget
+  - ksh
+  - perl-Expect # no package for Red Hat
+#  - perl-Date-Manip-6.60-2.fc28.noarch # on fedora 28
+  - xerces-c.x86_64
+  - libpcap.x86_64
+  - openssl-libs.x86_64
+  - perl-Date-Manip-6.41-2.el7.noarch # replacement for centos
+#  - perl-Date-Manip-6.41-1.fc20.noarch # for fedora 20
+#  - libidn* # needed by freeDiameter
+  - ruby # needed by mndr package
+
+repos_name: 'Unico-IN'
+repos_baseurl: 'http://devtools.dev.unico.com.au/nexus/content/repositories/unico-in-releases'
+repos_desc: 'Unico Mndr build repos'
+
+unico_packages:
+  - unico-support-tools
+  - unico-freeDiameter
+  - jsoncpp
+
+unico_binaries:
+#  - unico-freeDiameter-1.2.1-rc1u4.x86_64.rpm
+#  - unico-infra-services-11.3.0-0.x86_64.rpm
+#  - unico-protocol-services-11.5.0-0.x86_64.rpm
+#  - unico-mndr-3.0.0-0.x86_64.rpm
+  - unico-infra-services-11.3.0-2.x86_64.rpm
+  - unico-protocol-services-11.5.0-1.x86_64.rpm
+  - unico-mndr-3.0.0-2.x86_64.rpm
+
+
+
+#unico_freediameter: '/tmp/unico-freeDiameter-1.2.1-rc1u4.x86_64.rpm'
+unico_infra: '/tmp/unico-infra-services-11.3.0-2.x86_64.rpm'
+unico_proto: '/tmp/unico-protocol-services-11.5.0-1.x86_64.rpm'
+unico_mndr: '/tmp/unico-mndr-3.0.0-2.x86_64.rpm'
+
+mndr_binary_link:
+  - { src: '/opt/unico/unico-mndr-3.0.0/lib', dest: '/home/mndr/lib' }
+  - { src: '/opt/unico/unico-mndr-3.0.0/bin', dest: '/home/mndr/bin' }
+
+int1: '{{ ansible_eth0.ipv4.address }}'
+int2: '{{ ansible_eth0.ipv4.address }}'
+
+diameter_uri: 'aaa://{{ ansible_fqdn }}:3868'
+diameter_realm: '{{ ansible_domain }}'
+fsconfig_path: '/home/mndr/run/fsconfig'
+defines_path: '/home/mndr/config/defines.cfg'
+template_path: '/home/mndr/config/'
+template_items:
+  - dstore.m3ua
+  - dstore.routes
+  - dstore.sccp
+  - dstore.mndr
+
+devops_packages:
+  - python-pip 
+  - python-virtualenv
+  - git
+  - ansible
+  - tcpdump
+
+f5_packages:
+  - f5-sdk
+  - bigsuds
+  - netaddr
+  - deepdiff

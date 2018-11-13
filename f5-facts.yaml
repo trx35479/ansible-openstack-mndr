@@ -1,0 +1,20 @@
+---
+- name: Collect facts on load balancer
+  hosts: localhost
+  tasks:
+    - name: Collect BIG-IP facts
+      bigip_device_facts:
+        provider:
+          server: 10.230.4.13
+          user: admin
+          password: iops123!
+          server_port: 8443
+        gather_subset:
+          - nodes
+        validate_certs: no
+      delegate_to: localhost
+      register: bigip_fact
+
+    - name: Debug the facts
+      debug:
+        msg: '{{ bigip_fact }}'

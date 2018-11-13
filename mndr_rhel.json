@@ -1,0 +1,39 @@
+{
+	"builders": [{
+		"type": "openstack",
+		"ssh_username": "cloud-user",
+		"image_name": "mndr-rhel-base_v0.1",
+		"source_image": "c631130a-7978-4200-8862-c1795da5299e",
+		"flavor": "m1.medium",
+		"security_groups": "default",
+		"floating_ip_network": "public",
+		"networks": "59956be2-f1d2-45ad-b479-3e992d5100f7",
+                "image_visibility": "public"
+	}],
+	"provisioners": [{
+			"type": "file",
+			"source": "install_python.sh",
+			"destination": "/tmp/install_python.sh"
+		},
+                {
+                        "type": "file",
+                        "source": "bootstrap.tar",
+                        "destination": "/tmp/bootstrap.tar"
+                },
+		{
+			"type": "shell",
+			"inline": [
+				"sudo chmod +x /tmp/install_python.sh",
+                                "sudo tar -xvf /tmp/bootstrap.tar",
+				"sudo sh /tmp/install_python.sh"
+			]
+		},
+		{
+			"type": "ansible-local",
+			"playbook_file": "mndr_rhel.yaml",
+			"role_paths":[
+				"packer/roles/mndr-rhel7"
+			]
+		}
+	]
+}

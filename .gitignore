@@ -3,3 +3,5 @@ sandvinerc
 *.pem
 *.cfg
 inventory
+bootstrap/inventory
+bootstrap/*.cfg

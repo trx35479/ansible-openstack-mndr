@@ -1,0 +1,26 @@
+---
+- name: Create the node
+  bigip_node:
+    provider:
+        user: '{{ username }}'
+        password: '{{ password }}'
+        server: '{{ server }}'
+        server_port: '{{ api_port }}'
+        validate_certs: no
+    host: '{{ ansible_default_ipv4.address }}'
+    description: 'MNDR Node'
+    name: '{{ ansible_fqdn }}'
+
+- name: Add node to the Pool
+  bigip_pool_member:
+    provider:
+        user: '{{ username }}'
+        password: '{{ password }}'
+        server: '{{ server }}'
+        server_port: '{{ api_port }}'
+        validate_certs: no        
+    description: MNDR Application
+    host: '{{ ansible_default_ipv4.address }}' 
+    name: '{{ ansible_fqdn }}' 
+    pool: '{{ pool_name }}' 
+    port: '{{ dia_port }}'

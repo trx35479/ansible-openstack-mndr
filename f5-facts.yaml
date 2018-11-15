@@ -1,6 +1,7 @@
 ---
 - name: Collect facts on load balancer
   hosts: localhost
+  gather_facts: false
   tasks:
     - name: Collect BIG-IP facts
       bigip_device_facts:

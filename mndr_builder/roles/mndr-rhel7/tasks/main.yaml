@@ -1,41 +1,37 @@
-# Install dependencies 
+# Install dependencies
 - name: Install devops packages
-  dnf:
-    name: '{{ dev_software }}'
+  yum:
+    name: '{{ devops_packages }}'
     state: present
 - name: Install F5 ansible packages
   pip:
     name: '{{ f5_packages }}'
     state: present
-  
-# Install selinux dependencies    
+
+# Install selinux dependencies
 - name: Install selinux python library (Fedora)
-  dnf:
-    name: '{{ selinux_python_lib }}'
+  yum:
+    name: '{{ fedora_selinux_python_lib }}'
     state: present
   when: ansible_distribution == 'Fedora'
 
 - name: Install selinux python library (Centos)
   yum:
-    name: '{{ centos_selinux }}'
+    name: '{{ centos_selinux_python_lib }}'
     state: present
     update_cache: yes
   when: ansible_distribution == 'CentOS'
 
 # Disable SELinux
-- name: Set selinux to disabled 
+- name: Set selinux to disabled
   selinux:
     state: disabled
 
-# Add mndr user/group
-- name: Remove user using groupd id 100 (need to check if this will affect system)
-  user:
-    name: 'games'
-    state: absent
-- name: Remove the group using gid 100
-  group:
-    name: 'users'
-    state: absent
+# Set timezone
+- name: Set local timezone
+  timezone:
+    name: '{{ mndr_tz }}'
+
 - name: Add mndr group
   group:
     name: '{{ mndr_grp }}'
@@ -48,37 +44,13 @@
     group: '{{ mndr_grp }}'
     state: present
 
-# Set root password
-- name: Set root password
-  user:
-    name: 'root'
-    password: "{{ 'linux123' | password_hash('sha512') }}"
-    state: present
-    expires: 99999
-
-# Set hostname
-#- name: Generate ramdom number (1-100)
-#  set_fact:
-#    var1: "{{ 100|random(1,2) }}"
-#- name: Set hostname
-#  hostname: 
-#    name: 'mndr{{ var1 }}.{{ domain_name }}'
-
-# Work on sshd config         
-#- name: Modify sshd config
-#  lineinfile: 
-#    path: '{{ sshd_path }}' 
-#    state: present 
-#    regexp: '{{ item.regexp }}' 
-#    line: '{{ item.line }}'
-#  with_items: '{{ sshd_config }}' 
-#  notify: "Restart Sshd"
 # Remove line in a file using regex
-#- name: Replace the line in a ssh config file
-#  lineinfile:
-#    path: '{{ sshd_path }}'
-#    regexp: '{{ sshd_pass_string }}'
-#    line: '{{ sshd_pass_line }}'
+- name: Replace the line in a ssh config file
+  lineinfile:
+    path: '{{ sshd_path }}'
+    regexp: '{{ sshd_pass_string }}'
+    line: '{{ sshd_pass_line }}'
+  notify: 'Restart Sshd'
 
 # Create repo for mndr
 - name: Create mndr repo
@@ -100,9 +72,9 @@
     group: root
   with_items: '{{ unico_binaries }}'
 
-# Install package for kernel      
+# Install package for kernel
 - name: Install kernel-modules from upstream release
-  dnf:
+  yum:
     name: '{{ kernel_modules }}'
     state: present
 #  with_items: '{{ kernel_modules }}' -- loop will be deprecated on release 2.11
@@ -131,20 +103,15 @@
 
 # Install environment rpms
 - name: Install mndr dependecies
-  dnf:
+  yum:
     name: '{{ mndr_dependecies }}'
     state: present
 
 # Install Unico repos
 - name: Install Unico repos
-  dnf: 
+  yum:
     name: '{{ unico_packages }}'
     state: present
-
-# Install mndr package using rpm package mamager 
-- name: Install freeDiameter
-  command: 'rpm -ivh {{ unico_freediameter }}'
-  ignore_errors: yes
 - name: Install unico-infra
   command: 'rpm -ivh {{ unico_infra }}'
   ignore_errors: yes
@@ -175,40 +142,3 @@
     owner: '{{ mndr_usr }}'
     group: '{{ mndr_grp }}'
   with_items: '{{ mndr_binary_link }}'
-
-# Get the facts to be used on template
-#- name: Get localhost facts
-#  setup:
-#  delegate_to: localhost
-
-# Templates - copy templates and modify the Diameter Endpoints
-#- name: Create mndr/run directory
-#  file:
-#    path: '{{ item }}'
-#    state: directory
-#    mode: 0755
-#    owner: '{{ mndr_usr }}'
-#    group: '{{ mndr_grp }}'
-#  with_items: '{{ mndr_dir }}'
-#- name: Copy configuration file fsconfig
-#  template:
-#    src: 'fsconfig.j2'
-#    dest: '{{ fsconfig_path }}'
-#    owner: '{{ mndr_usr }}'
-#    group: '{{ mndr_grp }}'
-#    mode: 0644
-#- name: Copy defines.cfg template
-#  template:
-#    src: 'defines.cfg.j2'
-#    dest: '{{ defines_path }}'
-#    owner: '{{ mndr_usr }}'
-#    group: '{{ mndr_grp }}'
-#    mode: 0644
-#- name: Copy destore* files
-#  template:
-#    src: '{{ item }}'
-#    dest: '{{ template_path }}'
-#    owner: '{{ mndr_usr }}'
-#    group: '{{ mndr_grp }}'
-#    mode: 0644
-#  with_items: '{{ template_items }}'

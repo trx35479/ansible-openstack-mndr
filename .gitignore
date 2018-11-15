@@ -5,3 +5,5 @@ sandvinerc
 inventory
 bootstrap/inventory
 bootstrap/*.cfg
+mndr_builder/roles/mndr-rhel7/files/*.rpm
+mndr_builder/roles/mndr-fedora28/files/*.rpm
